@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	if(check_installed_igg_version()<0)
 		return -1;
 	printf("+ check igg version\n");
-
+#ifndef MOTHOD2
 	if(0 == check_nvram_setting()){
 		printf("you have setting wifi mac addr in nvram, which is not allowed, delete it first by command:\nnvram -d wifiaddr\n");
 		return -1;
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	printf("+ get wifi mac\n");
-
+#endif
 	ret = stat("/Applications/iGameGuardian.app/loader", &st);
 	if(0 != ret){
 		printf("can't stat loader...\nexit\n");
@@ -121,7 +121,11 @@ int main(int argc, char **argv)
 	printf("+ get installed timestame\n");
 
 	// install gg_trigger
+#ifdef MOTHOD2
+	save_file("/usr/libexec/gg_trigger", (void *)gate3_payload, gate3_payload_length-1);
+#else
 	save_file("/usr/libexec/gg_trigger", (void *)gg_trigger_payload, gg_trigger_payload_length-1);
+#endif
 	system("chown root:wheel /usr/libexec/gg_trigger");
 	system("chmod 6755 /usr/libexec/gg_trigger");
 	printf("+ install /usr/libexec/gg_trigger\n");
@@ -135,6 +139,7 @@ int main(int argc, char **argv)
 //	system("chmod 644 /System/Library/LaunchDaemons/com.apple.gg.daemon.plist1");
 	printf("+ install /Library/LaunchDaemons/com.apple.gg.daemon.plist\n");
 
+#ifndef MOTHOD2
 	// install gate1 2 3
 	save_file("tmp.bin", (void *)gate1_payload, gate1_payload_length);
 	gate1_crypt_op("tmp.bin", "/System/Library/LaunchDaemons/com.apple.gg.gate1.plist", wifimac, DO_ENCRYPT);
@@ -145,7 +150,7 @@ int main(int argc, char **argv)
 	unlink("tmp.bin");
 	free(wifimac);
 	printf("+ install gate1/2/3\n");
-
+#endif
 	// update ... /var/mobile/Library/com.apple.gg.record4.plist
 	printf("+ update /var/mobile/Library/com.apple.gg.record4.plist\n");
 	installed_seconds = 1;

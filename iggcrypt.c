@@ -20,22 +20,18 @@ static int do_crypt_op(const char *inpath, const char *outpath, uint8_t *key, in
 	uint8_t inbuf[16], outbuf[16];
 	char iv[]="auqAemaGrauGnaid";
 	FILE *infp, *outfp;
-	int cnt;
-	int R0, R6;
+	int cnt, loopcnt=1;
 
 	ctx.Nr = AesGenKeySched(ctx.Ek,  ctx.Dk, key, 16);
 	memcpy(ctx.Iv, iv, 16);
 	ctx.Mode = CBC;
 	infp = fopen(inpath, "rb");
 	outfp = fopen(outpath, "wb");
-	R6 = 1;
 	while(1){
 		cnt = fread(inbuf, 1, 16, infp);
 		if(16 != cnt)
 			break;
-		R0 = -1925330167;
-		R0 = (((int64_t)R0)*R6>>32)+R6; //SMMLA.W         R0, R0, R6, R6;
-		if(R6 == (29*((R0 >> 4) + (R0 >> 31)))){
+		if(0 == (loopcnt%29)){
 			xor_blk_with_char(inbuf, outbuf, 0xaa, 16);
 		}else{
 			if(DO_DECRYPT == op)
@@ -46,7 +42,7 @@ static int do_crypt_op(const char *inpath, const char *outpath, uint8_t *key, in
 				perror("unknown crypt op\n");
 			}
 		}
-		R6++;
+		loopcnt++;
 		fwrite(outbuf, 1, 16, outfp);
 	}
 	fclose(infp);
